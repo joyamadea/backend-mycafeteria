@@ -3,30 +3,6 @@ const connection = require('../connection');
 const lodash = require('lodash');
 const router = express.Router();
 
-// router.get('/',(req,res) => {
-//     connection.getConnection()
-//     .then(() => {
-//         var result = connection.query("SELECT * FROM products");
-//         return result;
-//         }).then((result) => {
-//             console.log(res.status(200).json({ status: true, "data": result}));
-//         }).catch((error) => {
-//         console.log(error.message);
-//     })
-// })
-
-// router.get('/:id', (req,res) => {
-//     connection.getConnection()
-//     .then(() => {
-//         const id = req.params.id;
-//         var query = "SELECT * FROM products WHERE categoryID = ?";
-//         var result = connection.query(query);
-//         return result;
-//     }).then((result) => {
-//         res.status(200).json({ status: true, "data": result})
-//     })
-// })
-
 router.get('/',(req,res) => {
     query = "SELECT * FROM products";
     connection.query(query, (err, result) => {
@@ -50,25 +26,22 @@ router.get('/:id', (req,res) => {
     })
 })
 
-// router.get('/', async function(req,res) {
-//     res.status(200).send({id:1});
-//     try {
-//         const query = "SELECT * FROM products";
-//         const rows = await connection.query(query);
-//         res.status(200).json(rows);
-//     } catch (err) {
-//         res.status(400).send(err.message);
-//     }
-// });
-
-router.get('/',(req,res,next) => {
-    connection.then(connection => {
-        console.log('working');
-    }).then((result) => {
-        res.status(200).json({ status: true, "data": "true"});
-    }).catch(error => {
-        console.log(error.message);
+router.get('/detail/:id', (req,res) => {
+    const id = req.params.id;
+    query = "SELECT p.productID, p.name, p.stock, p.price, p.description, p.imageURL, c.name AS category FROM products AS p INNER JOIN category AS c ON p.categoryID=c.categoryID WHERE p.productID = ?                                                                                      ";
+    connection.query(query, [id], (err, result) => {
+        if (!err) {
+            if (result.length > 0) {
+                res.status(200).json({ status: true, "data": result[0]});
+            } else {
+                res.status(404).json({ message: "No product found"});
+            }
+            
+        } else {
+            return res.status(500).json(err);
+        }
     })
 })
+
 
 module.exports = router;
